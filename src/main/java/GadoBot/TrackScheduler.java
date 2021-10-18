@@ -38,16 +38,16 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	public String list() {
 		int i = 1;
+		String lista = i + " - " + currentTrack.getInfo().author + " - " + currentTrack.getInfo().title;
 		if (!queue.isEmpty()) {
-			String lista = i + " - " + currentTrack.getInfo().author + " - " + currentTrack.getInfo().title + " (Tocando agora)";
-			for (AudioTrack audioTrack : queue) {
-				i++;
-				lista += "\n" + i + " - " + audioTrack.getInfo().title;
-			}
+//			for (AudioTrack audioTrack : queue) {
+//				i++;
+//				lista += "\n" + i + " - " + audioTrack.getInfo().title;
+//			}
+			queue.forEach(t -> lista.concat("\n" + i + " - " + t.getInfo().title));
 			return lista;
-		} else {
-			return i + " - " + currentTrack.getInfo().author + " - " + currentTrack.getInfo().title;
-		}
+		} else 
+			return lista;
 	}
 								
 	public AudioTrack remove(int trackIndex) {
