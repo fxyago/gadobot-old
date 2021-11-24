@@ -1,4 +1,4 @@
-package gadoBot.Handlers;
+package br.gadobot.Handlers;
 
 public class YoutubeHandler {
 

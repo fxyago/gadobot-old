@@ -1,4 +1,4 @@
-package gadoBot.Commands;
+package br.gadobot.Commands;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.apache.commons.math3.util.Pair;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
-import gadoBot.Handlers.CommandHandler;
-import gadoBot.Listeners.CommandListener;
-import gadoBot.Player.GadoAudioTrack;
+import br.gadobot.Handlers.CommandHandler;
+import br.gadobot.Listeners.CommandListener;
+import br.gadobot.Player.GadoAudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;

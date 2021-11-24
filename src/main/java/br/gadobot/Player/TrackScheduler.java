@@ -1,4 +1,4 @@
-package gadoBot.Player;
+package br.gadobot.Player;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,8 +16,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import gadoBot.Handlers.CommandHandler;
-import gadoBot.Listeners.CommandListener;
+import br.gadobot.Handlers.CommandHandler;
+import br.gadobot.Listeners.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;

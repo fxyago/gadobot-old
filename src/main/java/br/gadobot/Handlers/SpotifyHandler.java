@@ -1,4 +1,4 @@
-package gadoBot.Handlers;
+package br.gadobot.Handlers;
 
 import java.io.BufferedWriter;
 import java.io.File;

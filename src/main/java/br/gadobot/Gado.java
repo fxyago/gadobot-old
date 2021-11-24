@@ -1,11 +1,11 @@
-package gadoBot;
+package br.gadobot;
 
 //import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import gadoBot.Handlers.SpotifyHandler;
-import gadoBot.Listeners.CommandListener;
+import br.gadobot.Handlers.SpotifyHandler;
+import br.gadobot.Listeners.CommandListener;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 //import net.dv8tion.jda.api.entities.Member;

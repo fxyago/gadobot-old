@@ -1,4 +1,4 @@
-package gadoBot.Listeners;
+package br.gadobot.Listeners;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,9 +7,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 
-import gadoBot.Gado;
-import gadoBot.Commands.Commands;
-import gadoBot.Player.GuildMusicManager;
+import br.gadobot.Gado;
+import br.gadobot.Commands.Commands;
+import br.gadobot.Player.GuildMusicManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
