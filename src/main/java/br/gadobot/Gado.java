@@ -1,15 +1,11 @@
 package br.gadobot;
 
-//import java.util.List;
-
 import javax.security.auth.login.LoginException;
 
 import br.gadobot.Handlers.SpotifyHandler;
 import br.gadobot.Listeners.CommandListener;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-//import net.dv8tion.jda.api.entities.Member;
-//import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
@@ -30,13 +26,5 @@ public class Gado {
 				.setActivity(Activity.listening(PREFIX + "help"))
 				.build();
 	}
-
-//	public static boolean isBotConnectedToChannel(VoiceChannel channel) {
-//		List<Member> members = channel.getMembers();
-//		for (Member member : members)
-//			if (member.getIdLong() == selfId)
-//				return true;
-//		return false;
-//	}
 	
 }

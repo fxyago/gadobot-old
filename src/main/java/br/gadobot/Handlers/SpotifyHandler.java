@@ -81,27 +81,11 @@ public class SpotifyHandler {
 		
 	}
 	
-	/**
-	 * Returns a string that has the track info in the following syntax: "[Artist Name] - [Song Title]"
-	 * 
-	 * Example: "id:7tawDKBYV9059X92D6dr7R" returns "Fergie - Clumsy"
-	 * 
-	 * @param trackUrl - The spotify URL to convert, or the id of the track preceded by "id:"
-	 * @return A string containing the track info
-	 */
 	public Future<String> trackConverterAsync(String trackUrl) {
-		
-//		List<String> spotifyLink = Arrays.asList(trackUrl.split("/"));
 		
 		GetTrackRequest trackRequest;
 		
 		if (!trackUrl.startsWith("id:")) {
-//		if (!trackUrl.startsWith("id:")) {
-//			if (spotifyLink.get(spotifyLink.size() - 1).contains("?")) {
-//				trackRequest = spotify.getTrack(spotifyLink.get(spotifyLink.size() - 1).split("\\?")[0]).build();
-//			} else {
-//				trackRequest = spotify.getTrack(spotifyLink.get(spotifyLink.size() - 1)).build();
-//			}
 			trackRequest = spotify.getTrack(trackUrl.contains("?") ? trackUrl.split("/")[4].split("\\?")[0] : trackUrl.split("")[4]).build();
 		} else {
 			trackRequest = spotify.getTrack(trackUrl.substring(3, trackUrl.length())).build();
@@ -266,7 +250,6 @@ public class SpotifyHandler {
 	public static void refreshSpotifyToken() {
 
 		try {
-			
 			AuthorizationCodePKCERefreshRequest authorizationCodePKCERefreshRequest = spotify.authorizationCodePKCERefresh().build();
 			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodePKCERefreshRequest.execute();
 			
