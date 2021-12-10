@@ -28,6 +28,8 @@ import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
 import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
 import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
 
+import br.gadobot.Gado;
+
 public class SpotifyHandler {
 		
 	private static final SpotifyApi spotify = new SpotifyApi.Builder()
@@ -66,12 +68,9 @@ public class SpotifyHandler {
 			spotify.setAccessToken(spotifyAccessToken);
 			spotify.setRefreshToken(spotifyRefreshToken);
 			
-			String hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-			String minute = String.valueOf(Calendar.getInstance().get(Calendar.MINUTE));
-			minute = minute.length() < 2 ? ("0" + minute) : minute;
-			String time = hour + ":" + minute;
+			String time = formatTime();
 			
-			System.out.println("Time of start: " + time);
+			Gado.logger.info("Time of start: " + time);
 
 			timer.scheduleAtFixedRate(task, 0, 30 * 60 * 1000);
 
@@ -80,13 +79,21 @@ public class SpotifyHandler {
 		}
 		
 	}
+
+	private static String formatTime() {
+		String hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
+		String minute = String.valueOf(Calendar.getInstance().get(Calendar.MINUTE));
+		minute = minute.length() < 2 ? ("0" + minute) : minute;
+		String time = hour + ":" + minute;
+		return time;
+	}
 	
 	public Future<String> trackConverterAsync(String trackUrl) {
 		
 		GetTrackRequest trackRequest;
 		
 		if (!trackUrl.startsWith("id:")) {
-			trackRequest = spotify.getTrack(trackUrl.contains("?") ? trackUrl.split("/")[4].split("\\?")[0] : trackUrl.split("")[4]).build();
+			trackRequest = spotify.getTrack(trackUrl.contains("?") ? trackUrl.split("/")[4].split("\\?")[0] : trackUrl.split("/")[4]).build();
 		} else {
 			trackRequest = spotify.getTrack(trackUrl.substring(3, trackUrl.length())).build();
 		}
@@ -96,7 +103,6 @@ public class SpotifyHandler {
 				Track track = trackRequest.execute();
 				String name = track.getName();
 				String artist = track.getArtists()[0].getName();
-				System.out.println(artist + " - " + name);
 				return artist + " - " + name;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -106,7 +112,7 @@ public class SpotifyHandler {
 	}
 	
 	public int getNumberOfTracksAlbum(String albumUrl) {
-		String parsedId = albumUrl.contains("?") ? albumUrl.split("/")[4].split("\\?")[0] : albumUrl.split("")[4];
+		String parsedId = albumUrl.contains("?") ? albumUrl.split("/")[4].split("\\?")[0] : albumUrl.split("/")[4];
 		
 		GetAlbumRequest albumRequest = spotify.getAlbum(parsedId).build();
 		
@@ -123,7 +129,7 @@ public class SpotifyHandler {
 	
 	public int getNumberOfTracks(String playlistUrl) {
 		
-		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("")[4];
+		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 		
 		GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId).build();
 		
@@ -144,7 +150,7 @@ public class SpotifyHandler {
 		
 		String fullInfo = "";
 
-		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("")[4];
+		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 		
 		GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId).build();
 		
@@ -171,7 +177,7 @@ public class SpotifyHandler {
 			return executor.submit(() -> {
 				Double nOfLoops = Math.ceil(nOfTracks / 100d);
 
-				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("")[4];
+				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 				for (int i = 0; i < nOfLoops.intValue(); i++) {
 					GetPlaylistsItemsRequest itemsRequest = spotify.getPlaylistsItems(parsedId.trim()).offset(i*100).build();
 					try {
@@ -193,7 +199,7 @@ public class SpotifyHandler {
 			
 		} else {
 			return executor.submit(() -> {
-				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("")[4];
+				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 				GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId.trim()).build();
 
 				try {
@@ -262,13 +268,10 @@ public class SpotifyHandler {
 			spotify.setAccessToken(authorizationCodeCredentials.getAccessToken());
 			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
 			
-			String hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
-			String minute = String.valueOf(Calendar.getInstance().get(Calendar.MINUTE));
-			minute = minute.length() < 2 ? ("0" + minute) : minute;
-			String time = hour + ":" + minute;
+			String time =  formatTime();
 			
-			System.out.println("Token successfully refreshed at: " + time);
-			System.out.println("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
+			Gado.logger.info("Token successfully refreshed at: " + time);
+			Gado.logger.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

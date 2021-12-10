@@ -1,9 +1,14 @@
 package br.gadobot;
 
+
 import javax.security.auth.login.LoginException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.gadobot.Handlers.SpotifyHandler;
 import br.gadobot.Listeners.CommandListener;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -13,12 +18,16 @@ public class Gado {
 	
 	public static final long selfId = 906888499075112971l;
 	public static final String PREFIX = "[";
-	
-	public static SpotifyHandler spotifyHandler = new SpotifyHandler();
+	public static final Logger logger = LoggerFactory.getLogger(Gado.class);
+	public static JDA jda;
+	public static SpotifyHandler spotifyHandler;
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
 		
-		JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.OSyTbAKNYscE4DDiaww8aGuiJmo",
+		logger.info("Initializing...");
+		spotifyHandler = new SpotifyHandler();
+		
+		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.OSyTbAKNYscE4DDiaww8aGuiJmo",
 				GatewayIntent.GUILD_MESSAGES,
 				GatewayIntent.GUILD_VOICE_STATES)
 				.addEventListeners(new CommandListener())

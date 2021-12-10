@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -35,6 +36,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	private GadoAudioTrack currentTrack;
 	private TextChannel currentChannel;
 	private Timer timer = new Timer();
+	private int nOfTries;
 	
 	public TrackScheduler(AudioPlayer player) {
 		
@@ -43,7 +45,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		this.currentTrack = new GadoAudioTrack();
 	}
 	
-	public void queue(GadoAudioTrack gadoTrack) {
+	public synchronized void queue(GadoAudioTrack gadoTrack) {
 		
 		if (queue.isEmpty() && gadoTrack.getTrack() == null)
 			gadoTrack.setTrack(CommandHandler.queryTrack(playerManager, gadoTrack.getSongName(), listener.getGuildAudioPlayer(guild)));
@@ -51,7 +53,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		if (player.startTrack(gadoTrack.getTrack(), true)) {
 			currentTrack = gadoTrack;
 			refreshNowPlaying();
-			timer.cancel();
+			this.timer.cancel();
 		} else {
 			queue.offer(gadoTrack);
 		}
@@ -92,9 +94,8 @@ public class TrackScheduler extends AudioEventAdapter {
 	}
 	
 	public void nextTrack() {
-		currentTrack = queue.poll();
-		
-		if (!currentTrack.equals(null)) {
+		if (queue.peek() != null) {
+			currentTrack = queue.poll();
 			if (currentTrack.getTrack() == null)
 				currentTrack.setTrack(CommandHandler.queryTrack(playerManager, 
 						currentTrack.getSongName(),
@@ -105,6 +106,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		} else {
 			currentTrack = new GadoAudioTrack();
 		}
+		nOfTries = 0;
 	}
 	
 	private void refreshNowPlaying() {
@@ -116,14 +118,16 @@ public class TrackScheduler extends AudioEventAdapter {
 		List<Message> messages = history.getRetrievedHistory();
 		for (Message message : messages) {
 			if (message.getContentRaw().equals("")) {
-				MessageEmbed embed = message.getEmbeds().get(0);
-				if (embed.getDescription() != null && embed.getDescription().contains("Pedido por:")) {
-					message.editMessageEmbeds(new EmbedBuilder()
-							.setAuthor("Tocando agora:")
-							.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
-							.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
-							.build()).queue();
-					isFound = true;
+				if (message.getEmbeds().size() > 0) {
+					MessageEmbed embed = message.getEmbeds().get(0);
+					if (embed.getDescription() != null && embed.getDescription().contains("Pedido por:")) {
+						message.editMessageEmbeds(new EmbedBuilder()
+								.setAuthor("Tocando agora:")
+								.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
+								.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
+								.build()).queueAfter(5, TimeUnit.SECONDS);
+						isFound = true;
+					}					
 				}
 			}
 		}
@@ -132,7 +136,7 @@ public class TrackScheduler extends AudioEventAdapter {
 					.setAuthor("Tocando agora:")
 					.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
 					.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
-					.build()).queue();
+					.build()).queueAfter(5, TimeUnit.SECONDS);
 		}
 	}
 
@@ -142,23 +146,37 @@ public class TrackScheduler extends AudioEventAdapter {
 		if (endReason.mayStartNext) {
 			if (queue.isEmpty()) {
 				currentTrack = new GadoAudioTrack();
-
-				timer.schedule(new TimerTask() {
-					
-					@Override
-					public void run() {
-						guild.getAudioManager().closeAudioConnection();
-						currentChannel.sendMessageEmbeds(new EmbedBuilder()
-								.setDescription("Cabou a música, to indo nessa rapazeada 😎")
-								.build()).queue();
-					}
-					
-				}, 2*60*1000);
-				
+				resetTimer("Cabou a música, to indo nessa rapazeada 😎", 5, TimeUnit.MINUTES);
 			} else
 				nextTrack();
 		}
 		
+	}
+
+	@Override
+	public void onPlayerPause(AudioPlayer player) {
+		resetTimer("Tomei uma Pausada por muito tempo, flw", 15, TimeUnit.MINUTES);
+	}
+	
+	@Override
+	public void onPlayerResume(AudioPlayer player) {
+		this.timer.cancel();
+	}
+	
+	private void resetTimer(String msg, int time, TimeUnit unit) {
+		this.timer.cancel();
+		this.timer = new Timer();
+		this.timer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				guild.getAudioManager().closeAudioConnection();
+				currentChannel.sendMessageEmbeds(new EmbedBuilder()
+						.setDescription(msg)
+						.build()).queue();
+			}
+			
+		}, TimeUnit.MILLISECONDS.convert(time, unit));
 	}
 	
 	public void shuffle() {
@@ -171,13 +189,19 @@ public class TrackScheduler extends AudioEventAdapter {
 	@Override
 	public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
 		System.out.println("An exception occurred while trying to play the track, attempting to recover...");
-		AudioTrack cloneTrack = track.makeClone();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {}
-		System.out.println("Trying to replay the track...");
-		boolean isPlayed = player.startTrack(cloneTrack, false);
-		System.out.println("Recovered from exception: " + isPlayed);
+		if (nOfTries >= 3) {
+			System.out.println("Number of tries exceeded, skipping song");
+			nextTrack();
+		} else if (!exception.getMessage().contains("403")) {
+			AudioTrack cloneTrack = track.makeClone();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {}
+			System.out.println("Trying to replay the track...");
+			boolean isPlayed = player.startTrack(cloneTrack, false);
+			System.out.println("Recovered from exception: " + isPlayed);			
+		}
+		nOfTries++;
 	}
 
 	public void setGuild(Guild guild) {

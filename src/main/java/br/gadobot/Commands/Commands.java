@@ -8,6 +8,7 @@ import org.apache.commons.math3.util.Pair;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
+import br.gadobot.Gado;
 import br.gadobot.Handlers.CommandHandler;
 import br.gadobot.Listeners.CommandListener;
 import br.gadobot.Player.GadoAudioTrack;
@@ -19,7 +20,14 @@ import net.dv8tion.jda.api.interactions.components.Button;
 
 public enum Commands {
 	
-	ADMIN, ABOUT, PLAY, FORCEPLAY, PAUSE, RESUME, SKIP, JUMP, STOP, SEEK, NOWPLAYING, CLEAR, INFO, QUEUE, SHUFFLE, MOVE, REMOVE, FAIRQUEUE, SUMMON, VOLUME, TESTE, HELP, CHANGE, LEAVE, UNKNOWN;
+	ADMIN, ABOUT, PLAY, FORCEPLAY, PAUSE, RESUME, 
+	SKIP, JUMP, STOP, SEEK, NOWPLAYING, CLEAR, INFO, 
+	QUEUE, SHUFFLE, MOVE, REMOVE, FAIRQUEUE, SUMMON, 
+	VOLUME, TESTE, HELP, CHANGE, LEAVE, UNKNOWN;
+	
+	enum Admin {
+		SHUTDOWN
+	}
 	
 	private static final String THUMBSUP = "U+1F44D";
 	
@@ -74,7 +82,9 @@ public enum Commands {
 		switch (command) {
 		
 		case ADMIN:
-			
+			if (Admin.valueOf(arguments.toUpperCase()) == Admin.SHUTDOWN && event.getAuthor().getIdLong() == 156148460372885504l) {
+				Gado.jda.shutdown();
+			}
 			break;
 			
 		case PLAY:
@@ -90,6 +100,7 @@ public enum Commands {
 			break;
 			
 		case CLEAR:
+			addThumbsUp(event);
 			listener.getGuildAudioPlayer(event.getGuild()).scheduler.clearQueue();
 			break;
 		
@@ -110,11 +121,11 @@ public enum Commands {
 			
 			break;
 			
-		case MOVE: 
+		case MOVE:
 			moveTrack(event, listener, arguments);
 			break;
 		
-		case NOWPLAYING: 
+		case NOWPLAYING:
 			nowPlaying(event, listener);
 			break;
 		case PAUSE:
@@ -155,6 +166,7 @@ public enum Commands {
 			break;
 			
 		case SUMMON:
+			addThumbsUp(event);
 			CommandHandler.connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
 			break;
 			
@@ -227,7 +239,7 @@ public enum Commands {
 
 	private static void showQueue(final GuildMessageReceivedEvent event, final CommandListener listener) {
 		String[] lista = listener.getGuildAudioPlayer(event.getGuild()).scheduler.songList();
-		if (lista[0].equals("")) {
+		if (lista.length == 0) {
 			event.getChannel().sendMessageEmbeds(new EmbedBuilder()
 					.setAuthor("N tem nada tocando n")
 					.build()).queue();
