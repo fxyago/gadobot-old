@@ -33,7 +33,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	private AudioPlayerManager playerManager;
 	private final AudioPlayer player;
 	private final LinkedBlockingDeque<GadoAudioTrack> queue;
-	private GadoAudioTrack currentTrack;
+	private GadoAudioTrack currentTrack, lastTrack;
 	private TextChannel currentChannel;
 	private Timer timer = new Timer();
 	private int nOfTries;
@@ -95,6 +95,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	public void nextTrack() {
 		if (queue.peek() != null) {
+			lastTrack = currentTrack;
 			currentTrack = queue.poll();
 			if (currentTrack.getTrack() == null)
 				currentTrack.setTrack(CommandHandler.queryTrack(playerManager, 
@@ -105,8 +106,22 @@ public class TrackScheduler extends AudioEventAdapter {
 			refreshNowPlaying();
 		} else {
 			currentTrack = new GadoAudioTrack();
+			lastTrack = new GadoAudioTrack();
 		}
 		nOfTries = 0;
+	}
+	
+	public void previousTrack() {
+		if (lastTrack.getMember() != null) {			
+			queue.addFirst(currentTrack);
+			player.startTrack(lastTrack.getTrack(), false);
+			currentTrack = lastTrack;
+			lastTrack = new GadoAudioTrack();
+		} else {
+			currentChannel.sendMessageEmbeds(new EmbedBuilder()
+					.setDescription("Po man, eu so guardo 1 musica anterior por vez, acalma o cu ai")
+					.build()).queue();
+		}
 	}
 	
 	private void refreshNowPlaying() {
@@ -117,17 +132,16 @@ public class TrackScheduler extends AudioEventAdapter {
 		
 		List<Message> messages = history.getRetrievedHistory();
 		for (Message message : messages) {
-			if (message.getContentRaw().equals("")) {
-				if (message.getEmbeds().size() > 0) {
-					MessageEmbed embed = message.getEmbeds().get(0);
-					if (embed.getDescription() != null && embed.getDescription().contains("Pedido por:")) {
-						message.editMessageEmbeds(new EmbedBuilder()
-								.setAuthor("Tocando agora:")
-								.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
-								.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
-								.build()).queueAfter(5, TimeUnit.SECONDS);
-						isFound = true;
-					}					
+			if (message.getContentRaw().equals("") && message.getEmbeds().size() > 0) {
+				MessageEmbed embed = message.getEmbeds().get(0);
+				if (embed.getDescription() != null && embed.getDescription().contains("Pedido por:")) {
+					message.editMessageEmbeds(new EmbedBuilder()
+							.setAuthor("Tocando agora:")
+							.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
+							.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
+							.build()).queueAfter(3, TimeUnit.SECONDS);
+					isFound = true;
+					break;
 				}
 			}
 		}
@@ -136,7 +150,7 @@ public class TrackScheduler extends AudioEventAdapter {
 					.setAuthor("Tocando agora:")
 					.setTitle(currentTrack.getTrack().getInfo().title, currentTrack.getTrack().getInfo().uri)
 					.setDescription("Pedido por: " + currentTrack.getMember().getAsMention())
-					.build()).queueAfter(5, TimeUnit.SECONDS);
+					.build()).queueAfter(3, TimeUnit.SECONDS);
 		}
 	}
 
@@ -188,18 +202,18 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	@Override
 	public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-		System.out.println("An exception occurred while trying to play the track, attempting to recover...");
+		System.err.println("An exception occurred while trying to play the track, attempting to recover...");
 		if (nOfTries >= 3) {
-			System.out.println("Number of tries exceeded, skipping song");
+			System.err.println("Number of tries exceeded, skipping song");
 			nextTrack();
 		} else if (!exception.getMessage().contains("403")) {
 			AudioTrack cloneTrack = track.makeClone();
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
-			System.out.println("Trying to replay the track...");
+			System.err.println("Trying to replay the track...");
 			boolean isPlayed = player.startTrack(cloneTrack, false);
-			System.out.println("Recovered from exception: " + isPlayed);			
+			System.err.println("Recovered from exception: " + isPlayed);			
 		}
 		nOfTries++;
 	}

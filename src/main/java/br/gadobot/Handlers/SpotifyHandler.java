@@ -70,7 +70,7 @@ public class SpotifyHandler {
 			
 			String time = formatTime();
 			
-			Gado.logger.info("Time of start: " + time);
+			Gado.LOGGER.info("Time of start: " + time);
 
 			timer.scheduleAtFixedRate(task, 0, 30 * 60 * 1000);
 
@@ -270,8 +270,8 @@ public class SpotifyHandler {
 			
 			String time =  formatTime();
 			
-			Gado.logger.info("Token successfully refreshed at: " + time);
-			Gado.logger.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
+			Gado.LOGGER.info("Token successfully refreshed at: " + time);
+			Gado.LOGGER.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

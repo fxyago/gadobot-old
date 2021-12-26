@@ -16,15 +16,15 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class Gado {
 	
-	public static final long selfId = 906888499075112971l;
+	public static final long SELF_ID = 906888499075112971l;
 	public static final String PREFIX = "[";
-	public static final Logger logger = LoggerFactory.getLogger(Gado.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(Gado.class);
 	public static JDA jda;
 	public static SpotifyHandler spotifyHandler;
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
 		
-		logger.info("Initializing...");
+		LOGGER.info("Initializing...");
 		spotifyHandler = new SpotifyHandler();
 		
 		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.OSyTbAKNYscE4DDiaww8aGuiJmo",

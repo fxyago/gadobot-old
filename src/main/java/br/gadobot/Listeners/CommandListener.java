@@ -13,6 +13,8 @@ import br.gadobot.Player.GuildMusicManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -53,6 +55,14 @@ public class CommandListener extends ListenerAdapter {
 		String message = event.getMessage().getContentRaw();
 		if (message.startsWith(Gado.PREFIX))
 			Commands.execute(event, this, playerManager);
+	}
+	
+	@Override
+	public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+	}
+	
+	@Override
+	public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
 	}
 	
 	@Override
