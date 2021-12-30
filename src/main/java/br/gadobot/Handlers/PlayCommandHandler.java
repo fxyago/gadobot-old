@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
-public class CommandHandler {
+public class PlayCommandHandler {
 	
 	private enum ResultType {
 		YOUTUBE_TRACK, SPOTIFY_TRACK, YOUTUBE_PLAYLIST, SPOTIFY_PLAYLIST, YOUTUBE_SEARCH
@@ -87,7 +87,9 @@ public class CommandHandler {
 		connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
 		
 		queueFirstTrack(event, arguments, listener);
-		queueRemaining(event, listener, spotifyQueries);
+		new Thread(() -> {
+			queueRemaining(event, listener, spotifyQueries);			
+		}).start();
 	}
 
 	private static void queueRemaining(final GuildMessageReceivedEvent event, final CommandListener listener, Future<List<String>> spotifyQueries) {
@@ -142,13 +144,22 @@ public class CommandHandler {
 					break;
 					
 				case YOUTUBE_TRACK:
-					track = playlist.getTracks().get(0);
-					queueTrack(event.getGuild().getAudioManager(),
-							new GadoAudioTrack(track, event.getMember(), track.getInfo().title),
-							musicManager);
-					event.getChannel().sendMessageEmbeds(new EmbedBuilder()
-							.setAuthor("Adicionando à fila: ").setTitle(track.getInfo().title, track.getInfo().uri)
-							.build()).queue();
+					
+					for (int i = 0; i < playlist.getTracks().size(); i++) {
+						String regex = ".*?[Ll][Ii][Vv][Ee].*?";
+						if (playlist.getTracks().get(i).getInfo().title.matches(regex)) {
+							continue;
+						} else {
+							track = playlist.getTracks().get(i);
+							queueTrack(event.getGuild().getAudioManager(),
+									new GadoAudioTrack(track, event.getMember(), track.getInfo().title),
+									musicManager);
+							event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+									.setAuthor("Adicionando à fila: ").setTitle(track.getInfo().title, track.getInfo().uri)
+									.build()).queue();
+							break;
+						}
+					}
 					break;
 					
 				case YOUTUBE_PLAYLIST:
@@ -414,6 +425,12 @@ public class CommandHandler {
 				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
 						.setDescription("Alias: `l` `destroy`\n" + "`"
 						+ commandWithPrefix + "` -> expulsa o bot da sala (ele chora no banho dps)")
+						.build()).queue();
+				break;
+			case LYRICS:
+				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: lyrics")
+						.setDescription("Alias: `ly`\n" + "`"
+						+ commandWithPrefix + "` -> mostra a letra da musica atual")
 						.build()).queue();
 				break;
 			case ABOUT:

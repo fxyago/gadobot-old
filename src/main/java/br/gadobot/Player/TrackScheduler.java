@@ -17,7 +17,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import br.gadobot.Handlers.CommandHandler;
+import br.gadobot.Handlers.PlayCommandHandler;
 import br.gadobot.Listeners.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -48,7 +48,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	public synchronized void queue(GadoAudioTrack gadoTrack) {
 		
 		if (queue.isEmpty() && gadoTrack.getTrack() == null)
-			gadoTrack.setTrack(CommandHandler.queryTrack(playerManager, gadoTrack.getSongName(), listener.getGuildAudioPlayer(guild)));
+			gadoTrack.setTrack(PlayCommandHandler.queryTrack(playerManager, gadoTrack.getSongName(), listener.getGuildAudioPlayer(guild)));
 		
 		if (player.startTrack(gadoTrack.getTrack(), true)) {
 			currentTrack = gadoTrack;
@@ -98,7 +98,7 @@ public class TrackScheduler extends AudioEventAdapter {
 			lastTrack = currentTrack;
 			currentTrack = queue.poll();
 			if (currentTrack.getTrack() == null)
-				currentTrack.setTrack(CommandHandler.queryTrack(playerManager, 
+				currentTrack.setTrack(PlayCommandHandler.queryTrack(playerManager, 
 						currentTrack.getSongName(),
 						listener.getGuildAudioPlayer(guild)));
 			
@@ -185,6 +185,8 @@ public class TrackScheduler extends AudioEventAdapter {
 			@Override
 			public void run() {
 				guild.getAudioManager().closeAudioConnection();
+				player.setPaused(false);
+				clearQueue();
 				currentChannel.sendMessageEmbeds(new EmbedBuilder()
 						.setDescription(msg)
 						.build()).queue();
@@ -264,6 +266,10 @@ public class TrackScheduler extends AudioEventAdapter {
 		this.currentChannel = channel;
 	}
 
+	public boolean isPlaying() {
+		return !this.currentTrack.getSongName().equals("");
+	}
+	
 	public void jumpToTrack(int trackIndex) {
 		for (int i = 0; i < trackIndex-1; i++) queue.pop();
 		nextTrack();

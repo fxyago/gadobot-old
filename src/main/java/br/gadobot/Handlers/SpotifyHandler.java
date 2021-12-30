@@ -71,7 +71,7 @@ public class SpotifyHandler {
 			String time = formatTime();
 			
 			Gado.LOGGER.info("Time of start: " + time);
-
+			
 			timer.scheduleAtFixedRate(task, 0, 30 * 60 * 1000);
 
 		} catch (IOException e) {

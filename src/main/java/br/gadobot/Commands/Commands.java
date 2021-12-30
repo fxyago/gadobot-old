@@ -1,7 +1,9 @@
 package br.gadobot.Commands;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.math3.util.Pair;
 
@@ -9,9 +11,11 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
 import br.gadobot.Gado;
-import br.gadobot.Handlers.CommandHandler;
+import br.gadobot.Handlers.PlayCommandHandler;
 import br.gadobot.Listeners.CommandListener;
 import br.gadobot.Player.GadoAudioTrack;
+import core.GLA;
+import genius.SongSearch.Hit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
@@ -20,16 +24,17 @@ import net.dv8tion.jda.api.interactions.components.Button;
 
 public enum Commands {
 	
-	ADMIN, ABOUT, PLAY, FORCEPLAY, PAUSE, RESUME, 
-	SKIP, JUMP, STOP, SEEK, NOWPLAYING, CLEAR, INFO, 
-	QUEUE, SHUFFLE, MOVE, REMOVE, FAIRQUEUE, SUMMON, 
-	VOLUME, TESTE, HELP, CHANGE, LEAVE, UNKNOWN;
+	ADMIN, ABOUT, PLAY, FORCEPLAY, PAUSE, RESUME,
+	SKIP, JUMP, STOP, SEEK, NOWPLAYING, CLEAR, INFO,
+	QUEUE, SHUFFLE, MOVE, REMOVE, FAIRQUEUE, SUMMON,
+	VOLUME, TESTE, HELP, CHANGE, LEAVE, LYRICS, UNKNOWN;
 	
 	enum Admin {
 		SHUTDOWN
 	}
 	
 	private static final String THUMBSUP = "U+1F44D";
+	private static final GLA GeniusLyrics = new GLA();
 	
 	public static Commands get(String command) {
 		
@@ -48,6 +53,8 @@ public enum Commands {
 			case "Q":
 			case "LIST":
 				return QUEUE;
+			case "LYR":
+				return LYRICS;
 			case "L":
 			case "DESTROY":
 				return LEAVE;
@@ -88,7 +95,7 @@ public enum Commands {
 			break;
 			
 		case PLAY:
-			CommandHandler.play(event, arguments, listener, playerManager);
+			PlayCommandHandler.play(event, arguments, listener, playerManager);
 			break;
 		
 		case FORCEPLAY:
@@ -114,7 +121,7 @@ public enum Commands {
 			break;
 			
 		case HELP:
-			CommandHandler.helpCommand(event.getChannel(), arguments);
+			PlayCommandHandler.helpCommand(event.getChannel(), arguments);
 			break;
 			
 		case INFO:
@@ -167,11 +174,15 @@ public enum Commands {
 			
 		case SUMMON:
 			addThumbsUp(event);
-			CommandHandler.connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
+			PlayCommandHandler.connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
 			break;
 			
 		case TESTE:
-			//TODO: nothing, this is for testing 👀
+//			listener.getGuildAudioPlayer(event.getGuild()).player.setFilterFactory((track, format, output) -> {
+//				TimescalePcmAudioFilter audioFilter = new TimescalePcmAudioFilter(output, format.channelCount, format.sampleRate);
+//				    audioFilter.setSpeed(1.5); //1.5x normal speed
+//				    return Collections.singletonList(audioFilter);
+//			});
 			break;
 			
 		case UNKNOWN:
@@ -186,6 +197,9 @@ public enum Commands {
 			addThumbsUp(event);
 			clearPlayer(event, listener);
 			break;
+		case LYRICS:
+			displayLyrics(event, listener);
+			break;
 		case ABOUT:
 			event.getChannel().sendMessageEmbeds(new EmbedBuilder().setAuthor("Sobre mim:").setTitle("").setDescription(arguments).build());
 			break;
@@ -193,6 +207,37 @@ public enum Commands {
 		
 	}
 
+	private static void displayLyrics(GuildMessageReceivedEvent event, CommandListener listener) {
+		if (listener.getGuildAudioPlayer(event.getGuild()).scheduler.isPlaying()) {
+			GadoAudioTrack track = listener.getGuildAudioPlayer(event.getGuild()).scheduler.getCurrentTrack();
+			try {
+				
+				String regex = "\\(((.*?)|(HD.*?)|(HQ.*?)|(OFFICIAL.*?)|(OFICIAL.*?)|(LIVE.*?))\\)";
+				String treatedSongName = track.getSongName().replaceAll(regex, "").trim();
+				 
+				Hit hit = GeniusLyrics.search(treatedSongName).getHits().getFirst();
+				event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+						.setTitle(hit.getArtist().getName() + " - " + fixStringEncoding(hit.getTitle()), hit.getUrl())
+						.setDescription(fixStringEncoding(hit.fetchLyrics()))
+						.setFooter("Lyrics by Genius").build()).queue();
+			} catch (NoSuchElementException e) {
+				event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+						.setDescription("N consegui encontrar nada nao mano :/").build()).queue();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+					.setAuthor("Oxi, tem nada tocando nao").build()).queue();
+		}
+	}
+
+	private static String fixStringEncoding(String input) {
+		final Charset fromCharset = Charset.forName("windows-1252");
+		final Charset toCharset = Charset.forName("UTF-8");
+		return new String(input.getBytes(fromCharset), toCharset);
+	}
+	
 	private static void stopPlayer(final GuildMessageReceivedEvent event, final CommandListener listener) {
 		listener.getGuildAudioPlayer(event.getGuild()).scheduler.clearQueue();
 		listener.getGuildAudioPlayer(event.getGuild()).player.stopTrack();

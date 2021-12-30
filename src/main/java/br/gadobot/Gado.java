@@ -1,6 +1,5 @@
 package br.gadobot;
 
-
 import javax.security.auth.login.LoginException;
 
 import org.slf4j.Logger;
