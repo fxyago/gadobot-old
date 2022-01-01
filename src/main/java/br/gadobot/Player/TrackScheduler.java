@@ -25,12 +25,14 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 
 public class TrackScheduler extends AudioEventAdapter {
 
 	private CommandListener listener;
 	private Guild guild;
 	private AudioPlayerManager playerManager;
+	private VoiceChannel voiceChannel;
 	private final AudioPlayer player;
 	private final LinkedBlockingDeque<GadoAudioTrack> queue;
 	private GadoAudioTrack currentTrack, lastTrack;
@@ -195,6 +197,13 @@ public class TrackScheduler extends AudioEventAdapter {
 		}, TimeUnit.MILLISECONDS.convert(time, unit));
 	}
 	
+	public void leaveChannelOnIdle() {
+		this.guild.getAudioManager().closeAudioConnection();
+		this.currentChannel.sendMessageEmbeds(new EmbedBuilder()
+				.setDescription("todo mundo foi embora, vazei 😟")
+				.build()).queue();
+	}
+	
 	public void shuffle() {
 		List<GadoAudioTrack> tempQueue = new LinkedList<>();
 		queue.drainTo(tempQueue);
@@ -273,5 +282,13 @@ public class TrackScheduler extends AudioEventAdapter {
 	public void jumpToTrack(int trackIndex) {
 		for (int i = 0; i < trackIndex-1; i++) queue.pop();
 		nextTrack();
+	}
+
+	public VoiceChannel getVoiceChannel() {
+		return voiceChannel;
+	}
+
+	public void setVoiceChannel(VoiceChannel voiceChannel) {
+		this.voiceChannel = voiceChannel;
 	}
 }

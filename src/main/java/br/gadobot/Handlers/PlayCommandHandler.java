@@ -15,6 +15,7 @@ import br.gadobot.Commands.Commands;
 import br.gadobot.Listeners.CommandListener;
 import br.gadobot.Player.GadoAudioTrack;
 import br.gadobot.Player.GuildMusicManager;
+import br.gadobot.Player.TrackScheduler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -69,7 +70,7 @@ public class PlayCommandHandler {
 		
 		try {
 			queueRemaining(event, listener, spotifyQueries);
-			connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
+			connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember(), listener.getGuildAudioPlayer(event.getGuild()).scheduler);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -84,7 +85,7 @@ public class PlayCommandHandler {
 				.setAuthor("Adicionando à fila: ").setTitle(playlistSize + " músicas")
 				.build()).queue();
 		
-		connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
+		connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember(), listener.getGuildAudioPlayer(event.getGuild()).scheduler);
 		
 		queueFirstTrack(event, arguments, listener);
 		new Thread(() -> {
@@ -190,16 +191,17 @@ public class PlayCommandHandler {
 	}
 	
 	private static void queueTrack(AudioManager audioManager, GadoAudioTrack audioTrack, GuildMusicManager musicManager) {
-		connectToUserVoiceChannel(audioManager, audioTrack.getMember());
+		connectToUserVoiceChannel(audioManager, audioTrack.getMember(), musicManager.scheduler);
 		musicManager.scheduler.queue(audioTrack);
 	}
 	
-	public static void connectToUserVoiceChannel(AudioManager audioManager, Member member) {
+	public static void connectToUserVoiceChannel(AudioManager audioManager, Member member, TrackScheduler scheduler) {
 		if (!audioManager.isConnected())
 			for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
 				if (voiceChannel.getMembers().contains(member)) {
 					audioManager.setSelfDeafened(true);
 					audioManager.openAudioConnection(voiceChannel);
+					scheduler.setVoiceChannel(voiceChannel);
 				}
 			}
 	}

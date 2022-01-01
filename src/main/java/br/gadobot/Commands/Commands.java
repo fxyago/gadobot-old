@@ -174,7 +174,7 @@ public enum Commands {
 			
 		case SUMMON:
 			addThumbsUp(event);
-			PlayCommandHandler.connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember());
+			PlayCommandHandler.connectToUserVoiceChannel(event.getGuild().getAudioManager(), event.getMember(), listener.getGuildAudioPlayer(event.getGuild()).scheduler);
 			break;
 			
 		case TESTE:

@@ -2,6 +2,10 @@ package br.gadobot.Listeners;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -10,6 +14,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import br.gadobot.Gado;
 import br.gadobot.Commands.Commands;
 import br.gadobot.Player.GuildMusicManager;
+import br.gadobot.Player.TrackScheduler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -23,14 +28,14 @@ public class CommandListener extends ListenerAdapter {
 
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
+	private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5);
+	private ScheduledFuture<?> idleTimer;
 	
 	public CommandListener() {
-		
 		this.musicManagers = new HashMap<>();
 		this.playerManager = new DefaultAudioPlayerManager();
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		AudioSourceManagers.registerLocalSource(playerManager);
-		
 	}
 	
 	public synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
@@ -59,10 +64,31 @@ public class CommandListener extends ListenerAdapter {
 	
 	@Override
 	public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+		
+		TrackScheduler scheduler = getGuildAudioPlayer(event.getGuild()).scheduler;
+		
+		if (event.getChannelJoined().equals(scheduler.getVoiceChannel())) {
+			if (idleTimer != null) {
+				idleTimer.cancel(true);
+			};
+		}
 	}
 	
 	@Override
 	public void onGuildVoiceLeave(GuildVoiceLeaveEvent event) {
+		
+		TrackScheduler scheduler = getGuildAudioPlayer(event.getGuild()).scheduler;
+		
+		if (event.getMember().getIdLong() == Gado.SELF_ID) {
+			if (idleTimer != null) {
+				idleTimer.cancel(true);
+			}
+		} else if (scheduler.getVoiceChannel().equals(event.getChannelLeft()) && event.getChannelLeft().getMembers().size() == 1) {
+			idleTimer = executorService.schedule(() -> {
+				scheduler.leaveChannelOnIdle();
+				scheduler.clearQueue();
+			}, 5, TimeUnit.MINUTES);
+		}
 	}
 	
 	@Override
