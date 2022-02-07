@@ -1,4 +1,4 @@
-package br.gadobot.Player;
+package br.gadobot.player;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -17,8 +17,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
-import br.gadobot.Handlers.PlayCommandHandler;
-import br.gadobot.Listeners.CommandListener;
+import br.gadobot.handlers.PlayCommandHandler;
+import br.gadobot.listeners.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -39,6 +39,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	private TextChannel currentChannel;
 	private Timer timer = new Timer();
 	private int nOfTries;
+	private boolean connected;
 	
 	public TrackScheduler(AudioPlayer player) {
 		
@@ -109,6 +110,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		} else {
 			currentTrack = new GadoAudioTrack();
 			lastTrack = new GadoAudioTrack();
+			player.stopTrack();
 		}
 		nOfTries = 0;
 	}
@@ -189,6 +191,7 @@ public class TrackScheduler extends AudioEventAdapter {
 				guild.getAudioManager().closeAudioConnection();
 				player.setPaused(false);
 				clearQueue();
+				connected = false;
 				currentChannel.sendMessageEmbeds(new EmbedBuilder()
 						.setDescription(msg)
 						.build()).queue();
@@ -223,8 +226,7 @@ public class TrackScheduler extends AudioEventAdapter {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
 			System.err.println("Trying to replay the track...");
-			boolean isPlayed = player.startTrack(cloneTrack, false);
-			System.err.println("Recovered from exception: " + isPlayed);			
+			player.startTrack(cloneTrack, false);
 		}
 		nOfTries++;
 	}
@@ -290,5 +292,13 @@ public class TrackScheduler extends AudioEventAdapter {
 
 	public void setVoiceChannel(VoiceChannel voiceChannel) {
 		this.voiceChannel = voiceChannel;
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public void setConnected(boolean connected) {
+		this.connected = connected;
 	}
 }

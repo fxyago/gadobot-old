@@ -1,4 +1,4 @@
-package br.gadobot.Player;
+package br.gadobot.player;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 

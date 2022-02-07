@@ -5,8 +5,8 @@ import javax.security.auth.login.LoginException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.gadobot.Handlers.SpotifyHandler;
-import br.gadobot.Listeners.CommandListener;
+import br.gadobot.handlers.SpotifyHandler;
+import br.gadobot.listeners.CommandListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -33,6 +33,7 @@ public class Gado {
 				.disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
 				.setActivity(Activity.listening(PREFIX + "help"))
 				.build();
+		
 	}
 	
 }

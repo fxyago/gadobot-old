@@ -1,10 +1,10 @@
-package br.gadobot.Player;
+package br.gadobot.player;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener;
 
-import br.gadobot.Handlers.AudioPlayerSendHandler;
+import br.gadobot.handlers.AudioPlayerSendHandler;
 
 public class GuildMusicManager {
 

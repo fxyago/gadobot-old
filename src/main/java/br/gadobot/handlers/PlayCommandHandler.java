@@ -1,4 +1,4 @@
-package br.gadobot.Handlers;
+package br.gadobot.handlers;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,11 +11,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import br.gadobot.Gado;
-import br.gadobot.Commands.Commands;
-import br.gadobot.Listeners.CommandListener;
-import br.gadobot.Player.GadoAudioTrack;
-import br.gadobot.Player.GuildMusicManager;
-import br.gadobot.Player.TrackScheduler;
+import br.gadobot.commands.Commands;
+import br.gadobot.listeners.CommandListener;
+import br.gadobot.player.GadoAudioTrack;
+import br.gadobot.player.GuildMusicManager;
+import br.gadobot.player.TrackScheduler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;

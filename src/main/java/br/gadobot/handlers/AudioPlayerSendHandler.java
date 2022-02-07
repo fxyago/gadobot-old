@@ -1,4 +1,4 @@
-package br.gadobot.Handlers;
+package br.gadobot.handlers;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;

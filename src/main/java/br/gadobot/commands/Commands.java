@@ -1,4 +1,4 @@
-package br.gadobot.Commands;
+package br.gadobot.commands;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -11,9 +11,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
 import br.gadobot.Gado;
-import br.gadobot.Handlers.PlayCommandHandler;
-import br.gadobot.Listeners.CommandListener;
-import br.gadobot.Player.GadoAudioTrack;
+import br.gadobot.handlers.PlayCommandHandler;
+import br.gadobot.listeners.CommandListener;
+import br.gadobot.player.GadoAudioTrack;
 import core.GLA;
 import genius.SongSearch.Hit;
 import net.dv8tion.jda.api.EmbedBuilder;
