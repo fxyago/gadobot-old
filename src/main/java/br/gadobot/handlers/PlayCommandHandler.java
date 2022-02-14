@@ -202,6 +202,7 @@ public class PlayCommandHandler {
 					audioManager.setSelfDeafened(true);
 					audioManager.openAudioConnection(voiceChannel);
 					scheduler.setVoiceChannel(voiceChannel);
+					scheduler.setConnected(true);
 				}
 			}
 	}

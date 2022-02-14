@@ -216,7 +216,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	
 	@Override
 	public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-		System.err.println("An exception occurred while trying to play the track, attempting to recover...");
+		System.err.println("An exception occurred while trying to play the track, attempting to recover..." + " try " + nOfTries);
 		if (nOfTries >= 3) {
 			System.err.println("Number of tries exceeded, skipping song");
 			nextTrack();
@@ -225,22 +225,9 @@ public class TrackScheduler extends AudioEventAdapter {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {}
-			System.err.println("Trying to replay the track...");
 			player.startTrack(cloneTrack, false);
 		}
 		nOfTries++;
-	}
-
-	public void setGuild(Guild guild) {
-		this.guild = guild;
-	}
-	
-	public void setListener(CommandListener listener) {
-		this.listener = listener;
-	}
-
-	public void setManager(AudioPlayerManager playerManager) {
-		this.playerManager = playerManager;
 	}
 
 	public void seek(int duration) {
@@ -273,17 +260,28 @@ public class TrackScheduler extends AudioEventAdapter {
 		return trackRemoved;
 	}
 	
+	public void jumpToTrack(int trackIndex) {
+		for (int i = 0; i < trackIndex-1; i++) queue.pop();
+		nextTrack();
+	}
+		
+	public void setGuild(Guild guild) {
+		this.guild = guild;
+	}
+	
+	public void setListener(CommandListener listener) {
+		this.listener = listener;
+	}
+
+	public void setManager(AudioPlayerManager playerManager) {
+		this.playerManager = playerManager;
+	}
 	public void setChannel(TextChannel channel) {
 		this.currentChannel = channel;
 	}
 
 	public boolean isPlaying() {
 		return !this.currentTrack.getSongName().equals("");
-	}
-	
-	public void jumpToTrack(int trackIndex) {
-		for (int i = 0; i < trackIndex-1; i++) queue.pop();
-		nextTrack();
 	}
 
 	public VoiceChannel getVoiceChannel() {
