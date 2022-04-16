@@ -22,6 +22,7 @@ import br.gadobot.listeners.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -36,7 +37,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	private final AudioPlayer player;
 	private final LinkedBlockingDeque<GadoAudioTrack> queue;
 	private GadoAudioTrack currentTrack, lastTrack;
-	private TextChannel currentChannel;
+	private MessageChannel currentChannel;
 	private Timer timer = new Timer();
 	private int nOfTries;
 	private boolean connected;
@@ -276,8 +277,8 @@ public class TrackScheduler extends AudioEventAdapter {
 	public void setManager(AudioPlayerManager playerManager) {
 		this.playerManager = playerManager;
 	}
-	public void setChannel(TextChannel channel) {
-		this.currentChannel = channel;
+	public void setChannel(MessageChannel messageChannel) {
+		this.currentChannel = messageChannel;
 	}
 
 	public boolean isPlaying() {

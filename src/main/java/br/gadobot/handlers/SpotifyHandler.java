@@ -14,27 +14,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import com.wrapper.spotify.SpotifyApi;
-import com.wrapper.spotify.model_objects.credentials.AuthorizationCodeCredentials;
-import com.wrapper.spotify.model_objects.specification.Album;
-import com.wrapper.spotify.model_objects.specification.Paging;
-import com.wrapper.spotify.model_objects.specification.Playlist;
-import com.wrapper.spotify.model_objects.specification.PlaylistTrack;
-import com.wrapper.spotify.model_objects.specification.Track;
-import com.wrapper.spotify.model_objects.specification.TrackSimplified;
-import com.wrapper.spotify.requests.authorization.authorization_code.pkce.AuthorizationCodePKCERefreshRequest;
-import com.wrapper.spotify.requests.data.albums.GetAlbumRequest;
-import com.wrapper.spotify.requests.data.playlists.GetPlaylistRequest;
-import com.wrapper.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
-import com.wrapper.spotify.requests.data.tracks.GetTrackRequest;
-
 import br.gadobot.Gado;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
+import se.michaelthelin.spotify.model_objects.specification.Album;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.Playlist;
+import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
+import se.michaelthelin.spotify.model_objects.specification.Track;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.pkce.AuthorizationCodePKCERefreshRequest;
+import se.michaelthelin.spotify.requests.data.albums.GetAlbumRequest;
+import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistRequest;
+import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
+import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 
 public class SpotifyHandler {
 		
+	
 	private static final SpotifyApi spotify = new SpotifyApi.Builder()
-			.setClientId("d7aee843f7eb4b5394240745cf729a76")
-			.setClientSecret("834f3cb65fbc474eaa04a6224bcf5cf4")
+			.setClientId("b4bce5a2399d4867a9178c4dc19f4157")
+			.setClientSecret("130eeaf2287d43bf9230114c4ab38459")
 			.build();
 	
 	private static String spotifyAccessToken;
@@ -65,6 +66,9 @@ public class SpotifyHandler {
 			spotifyRefreshToken = scan.nextLine();
 			scan.close();
 
+			System.out.println(spotifyAccessToken);
+			System.out.println(spotifyRefreshToken);
+			
 			spotify.setAccessToken(spotifyAccessToken);
 			spotify.setRefreshToken(spotifyRefreshToken);
 			
@@ -256,17 +260,38 @@ public class SpotifyHandler {
 	public static void refreshSpotifyToken() {
 
 		try {
-			AuthorizationCodePKCERefreshRequest authorizationCodePKCERefreshRequest = spotify.authorizationCodePKCERefresh().build();
-			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodePKCERefreshRequest.execute();
+//			AuthorizationCodePKCERefreshRequest authorizationCodePKCERefreshRequest = spotify.authorizationCodePKCERefresh().build();
+//			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodePKCERefreshRequest.execute();
+//			
+//			BufferedWriter br = new BufferedWriter(new FileWriter(cfg));
+//			br.write(authorizationCodeCredentials.getAccessToken());
+//			br.write("\n");
+//			br.write(authorizationCodeCredentials.getRefreshToken());
+//			br.close();
+//			
+//			spotify.setAccessToken(authorizationCodeCredentials.getAccessToken());
+//			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
+//			
+//			String time =  formatTime();
+//			
+//			Gado.LOGGER.info("Token successfully refreshed at: " + time);
+//			Gado.LOGGER.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
+			
+			AuthorizationCodeRefreshRequest authorizationCodeRefreshRequest = spotify.authorizationCodeRefresh().build();
+			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRefreshRequest.execute();
 			
 			BufferedWriter br = new BufferedWriter(new FileWriter(cfg));
+			
+			System.out.println(authorizationCodeCredentials.getAccessToken());
+			System.out.println(authorizationCodeCredentials.getRefreshToken());
+			
 			br.write(authorizationCodeCredentials.getAccessToken());
-			br.write("\n");
-			br.write(authorizationCodeCredentials.getRefreshToken());
+			br.write(System.lineSeparator());
+			br.write(spotifyRefreshToken);
 			br.close();
 			
 			spotify.setAccessToken(authorizationCodeCredentials.getAccessToken());
-			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
+//			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
 			
 			String time =  formatTime();
 			

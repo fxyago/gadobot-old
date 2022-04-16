@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.math3.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -19,8 +19,8 @@ import genius.SongSearch.Hit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Emoji;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.components.Button;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 public enum Commands {
 	
@@ -73,15 +73,15 @@ public enum Commands {
 		}
 	}
 	
-	public static void execute(final GuildMessageReceivedEvent event, final CommandListener listener, AudioPlayerManager playerManager) {
+	public static void execute(final MessageReceivedEvent event, final CommandListener listener, AudioPlayerManager playerManager) {
 		
 		Commands command;
 		String arguments;
 		
 		Pair<String, String> convertedStrings = convertMessage(event.getMessage().getContentRaw());
 		
-		command = Commands.get(convertedStrings.getFirst());
-		arguments = convertedStrings.getSecond();
+		command = Commands.get(convertedStrings.getLeft());
+		arguments = convertedStrings.getRight();
 		
 		if (command != UNKNOWN)
 			listener.getGuildAudioPlayer(event.getGuild()).scheduler.setChannel(event.getChannel());
@@ -207,7 +207,7 @@ public enum Commands {
 		
 	}
 
-	private static void displayLyrics(GuildMessageReceivedEvent event, CommandListener listener) {
+	private static void displayLyrics(MessageReceivedEvent event, CommandListener listener) {
 		if (listener.getGuildAudioPlayer(event.getGuild()).scheduler.isPlaying()) {
 			GadoAudioTrack track = listener.getGuildAudioPlayer(event.getGuild()).scheduler.getCurrentTrack();
 			try {
@@ -238,18 +238,18 @@ public enum Commands {
 		return new String(input.getBytes(fromCharset), toCharset);
 	}
 	
-	private static void stopPlayer(final GuildMessageReceivedEvent event, final CommandListener listener) {
+	private static void stopPlayer(final MessageReceivedEvent event, final CommandListener listener) {
 		listener.getGuildAudioPlayer(event.getGuild()).scheduler.clearQueue();
 		listener.getGuildAudioPlayer(event.getGuild()).player.stopTrack();
 	}
 
-	private static void clearPlayer(final GuildMessageReceivedEvent event, final CommandListener listener) {
+	private static void clearPlayer(final MessageReceivedEvent event, final CommandListener listener) {
 		listener.getGuildAudioPlayer(event.getGuild()).player.destroy();
 		listener.getGuildAudioPlayer(event.getGuild()).scheduler.clearQueue();
 		event.getGuild().getAudioManager().closeAudioConnection();
 	}
 
-	private static void removeTrack(final GuildMessageReceivedEvent event, final CommandListener listener,
+	private static void removeTrack(final MessageReceivedEvent event, final CommandListener listener,
 			String arguments) {
 		String trackRemoved = listener.getGuildAudioPlayer(event.getGuild()).scheduler.removeTrack(Integer.parseInt(arguments));
 		event.getChannel().sendMessageEmbeds(new EmbedBuilder()
@@ -258,7 +258,7 @@ public enum Commands {
 				.build()).queue();
 	}
 
-	private static void moveTrack(final GuildMessageReceivedEvent event, final CommandListener listener,
+	private static void moveTrack(final MessageReceivedEvent event, final CommandListener listener,
 			String arguments) {
 		int indexFrom = Integer.parseInt(arguments.trim().split(",")[0].trim());
 		int indexTo = Integer.parseInt(arguments.trim().split(",")[1].trim());
@@ -270,7 +270,7 @@ public enum Commands {
 				.build()).queue();
 	}
 
-	private static void nowPlaying(final GuildMessageReceivedEvent event, final CommandListener listener) {
+	private static void nowPlaying(final MessageReceivedEvent event, final CommandListener listener) {
 		GadoAudioTrack gadoTrack = listener.getGuildAudioPlayer(event.getGuild()).scheduler.getCurrentTrack();
 
 		String uri = gadoTrack.getTrack().getInfo().uri;
@@ -282,7 +282,7 @@ public enum Commands {
 				.setDescription("Pedido por: " + member.getAsMention()).build()).queue();
 	}
 
-	private static void showQueue(final GuildMessageReceivedEvent event, final CommandListener listener) {
+	private static void showQueue(final MessageReceivedEvent event, final CommandListener listener) {
 		String[] lista = listener.getGuildAudioPlayer(event.getGuild()).scheduler.songList();
 		if (lista.length == 0) {
 			event.getChannel().sendMessageEmbeds(new EmbedBuilder()
@@ -302,7 +302,7 @@ public enum Commands {
 		}
 	}
 
-	private static void volume(final GuildMessageReceivedEvent event, final CommandListener listener,
+	private static void volume(final MessageReceivedEvent event, final CommandListener listener,
 			String arguments) {
 		if (arguments.equals("")) {
 			event.getChannel().sendMessageEmbeds(new EmbedBuilder()
@@ -328,11 +328,11 @@ public enum Commands {
 		}
 	}
 
-	private static void addThumbsUp(final GuildMessageReceivedEvent event) {
+	private static void addThumbsUp(final MessageReceivedEvent event) {
 		event.getMessage().addReaction(THUMBSUP).queue();
 	}
 
-	private static void seek(final GuildMessageReceivedEvent event, final CommandListener listener, String arguments) {
+	private static void seek(final MessageReceivedEvent event, final CommandListener listener, String arguments) {
 		int totalTime;
 		if (arguments.contains(":")) {
 			totalTime = Integer.parseInt(arguments.split(":")[0]) * 60
@@ -371,7 +371,7 @@ public enum Commands {
 		}
 		arguments = arguments.trim();
 		
-		return new Pair<String, String>(command, arguments);
+		return Pair.of(command, arguments);
 		
 	}
 	

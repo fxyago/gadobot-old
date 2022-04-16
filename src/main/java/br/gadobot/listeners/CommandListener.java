@@ -20,8 +20,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceLeaveEvent;
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class CommandListener extends ListenerAdapter {
@@ -55,8 +55,7 @@ public class CommandListener extends ListenerAdapter {
 		return musicManager;
 	}
 
-	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+	public void onGuildMessageReceived(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentRaw();
 		if (message.startsWith(Gado.PREFIX))
 			Commands.execute(event, this, playerManager);
@@ -94,8 +93,7 @@ public class CommandListener extends ListenerAdapter {
 		}
 	}
 	
-	@Override
-	public void onButtonClick(ButtonClickEvent event) {
+	public void onButtonClick(ButtonInteractionEvent event) {
 		
 		String id = "";
 		Message message;

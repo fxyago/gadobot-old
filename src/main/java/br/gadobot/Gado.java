@@ -26,7 +26,7 @@ public class Gado {
 		LOGGER.info("Initializing...");
 		spotifyHandler = new SpotifyHandler();
 		
-		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.OSyTbAKNYscE4DDiaww8aGuiJmo",
+		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.claq2OZkGDur3UMhjz19ma-UIck",
 				GatewayIntent.GUILD_MESSAGES,
 				GatewayIntent.GUILD_VOICE_STATES)
 				.addEventListeners(new CommandListener())

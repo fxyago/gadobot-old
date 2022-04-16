@@ -18,9 +18,10 @@ import br.gadobot.player.GuildMusicManager;
 import br.gadobot.player.TrackScheduler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
 public class PlayCommandHandler {
@@ -29,7 +30,7 @@ public class PlayCommandHandler {
 		YOUTUBE_TRACK, SPOTIFY_TRACK, YOUTUBE_PLAYLIST, SPOTIFY_PLAYLIST, YOUTUBE_SEARCH
 	}
 		
-	public static void play(final GuildMessageReceivedEvent event, final String arguments, final CommandListener listener, final AudioPlayerManager playerManager) {
+	public static void play(final MessageReceivedEvent event, final String arguments, final CommandListener listener, final AudioPlayerManager playerManager) {
 		
 		boolean isSearch = event.getMessage().getContentRaw().startsWith(Gado.PREFIX + "search");
 
@@ -60,7 +61,7 @@ public class PlayCommandHandler {
 		
 	}
 
-	private static void queueAlbum(final GuildMessageReceivedEvent event, final String arguments, final CommandListener listener) {
+	private static void queueAlbum(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		
 		Future<List<String>> spotifyQueries = Gado.spotifyHandler.albumConverterAsync(arguments);
 		
@@ -76,7 +77,7 @@ public class PlayCommandHandler {
 		}
 	}
 
-	private static void queuePlaylist(final GuildMessageReceivedEvent event, final String arguments, final CommandListener listener) {
+	private static void queuePlaylist(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		
 		Future<List<String>> spotifyQueries = Gado.spotifyHandler.playlistConverterAsync(arguments);
 		int playlistSize = Gado.spotifyHandler.getNumberOfTracks(arguments);
@@ -93,7 +94,7 @@ public class PlayCommandHandler {
 		}).start();
 	}
 
-	private static void queueRemaining(final GuildMessageReceivedEvent event, final CommandListener listener, Future<List<String>> spotifyQueries) {
+	private static void queueRemaining(final MessageReceivedEvent event, final CommandListener listener, Future<List<String>> spotifyQueries) {
 		try {
 			spotifyQueries.get().forEach(q -> queueSilently(listener.getGuildAudioPlayer(event.getGuild()), event.getMember(), q));
 		} catch (Exception e) {
@@ -101,7 +102,7 @@ public class PlayCommandHandler {
 		}
 	}
 
-	private static void queueFirstTrack(final GuildMessageReceivedEvent event, final String arguments, final CommandListener listener) {
+	private static void queueFirstTrack(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		try {
 			queueSilently(listener.getGuildAudioPlayer(event.getGuild()), event.getMember(), Gado.spotifyHandler.firstTrackConverterAsync(arguments).get());
 		} catch (Exception e) {
@@ -109,7 +110,7 @@ public class PlayCommandHandler {
 		}
 	}
 	
-	private static void loadAndPlay(final GuildMessageReceivedEvent event, final String query, final CommandListener listener, final AudioPlayerManager playerManager, ResultType t) {
+	private static void loadAndPlay(final MessageReceivedEvent event, final String query, final CommandListener listener, final AudioPlayerManager playerManager, ResultType t) {
 		
 		GuildMusicManager musicManager = listener.getGuildAudioPlayer(event.getGuild());
 		playerManager.loadItemOrdered(musicManager, query, new AudioLoadResultHandler() {
@@ -259,7 +260,7 @@ public class PlayCommandHandler {
 		return trackReceived.get(0);
 	}
 	
-	public static void helpCommand(final TextChannel channel, String command) {
+	public static void helpCommand(final MessageChannel messageChannel, String command) {
 
 		StringBuffer sb = new StringBuffer();
 		
@@ -272,7 +273,7 @@ public class PlayCommandHandler {
 			sb.append("nowplaying, info\n");
 			sb.append("`Sobre o bot:`\n");
 			sb.append("about");
-			channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Lista de comandos:")
+			messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Lista de comandos:")
 					.setDescription(sb.toString())
 					.build()).queue();
 		} else {
@@ -283,27 +284,27 @@ public class PlayCommandHandler {
 			case ADMIN:
 				break;
 			case CHANGE:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: change")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: change")
 						.setDescription("`" + commandWithPrefix + "` -> sim").build()).queue();
 				break;
 			case CLEAR:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
 						.setDescription("`" + commandWithPrefix + "` -> limpa a fila e para de tocar música").build())
 						.queue();
 				break;
 			case FAIRQUEUE:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: fairqueue").setDescription("Alias: `fq`"
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: fairqueue").setDescription("Alias: `fq`"
 						+ "`" + commandWithPrefix + "` -> liga o fairqueue"
 						+ "\ni.e. músicas são ordenadas de modo a tocar uma música pedida de cada usuário por vez")
 						.build()).queue();
 				break;
 			case HELP:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
 						.setDescription("`" + commandWithPrefix + "` -> limpa a fila e para de tocar música").build())
 						.queue();
 				break;
 			case INFO:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder().setTitle("Comando: info")
 								.setDescription("`" + commandWithPrefix
 										+ " [index]` -> mostra informação sobre uma música da fila"
@@ -312,7 +313,7 @@ public class PlayCommandHandler {
 						.queue();
 				break;
 			case MOVE:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: move")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: move")
 						.setDescription("`" + commandWithPrefix
 								+ " [indexDe], [indexPara]` -> move uma música para outro lugar da fila"
 								+ "\nConsulte os index das músicas pelo comando `queue`" + "\nEx.: `"
@@ -320,45 +321,45 @@ public class PlayCommandHandler {
 						.build()).queue();
 				break;
 			case NOWPLAYING:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder()
 								.setTitle("Comando: nowplaying").setDescription("Alias: `np`\n" + "`"
 								+ commandWithPrefix + "` -> mostra informação sobre a música atual \n`")
 						.build()).queue();
 				break;
 			case PAUSE:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder().setTitle("Comando: pause").setDescription("`" + commandWithPrefix
 								+ "` -> pausa o bot" + "\n Use o comando `resume` para continuar a música")
 						.build()).queue();
 				break;
 			case JUMP:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: jump")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: jump")
 						.setDescription("Alias: `jumpto`, `skipto`\n" + "`" + commandWithPrefix
 								+ " [index]` -> pula para a música contida no index da fila"
 								+ "\nTodas as músicas anteriores a ela são descartadas")
 						.build()).queue();
 				break;
 			case PLAY:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: play").setDescription("Alias: `p`"
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: play").setDescription("Alias: `p`"
 						+ "\n`" + commandWithPrefix + " [musica]`-> pede uma música para o bot"
 						+ "\n[musica] pode ser um link do youtube, spotify ou um texto (texto a ser pesquisado no youtube)"
 						+ "\nTambém suporta link de playlists").build()).queue();
 				break;
 			case FORCEPLAY:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: forceplay")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: forceplay")
 						.setDescription("Alias: `fplay`" + "\n`" + commandWithPrefix
 								+ "[música]` -> troca a música que estiver tocando por outra")
 						.build()).queue();
 				break;
 			case QUEUE:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: queue")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: queue")
 						.setDescription(
 								"Alias: `q` `list`" + "\n`" + commandWithPrefix + "` -> mostra a fila de músicas")
 						.build()).queue();
 				break;
 			case REMOVE:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder().setTitle("Comando: remove")
 								.setDescription("`" + commandWithPrefix
 										+ " [index]` -> remove da fila a música do index referido"
@@ -367,7 +368,7 @@ public class PlayCommandHandler {
 						.queue();
 				break;
 			case RESUME:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder().setTitle("Comando: resume")
 								.setDescription("`" + commandWithPrefix
 										+ "` -> continua a música caso o bot esteja pausado/parado"
@@ -376,7 +377,7 @@ public class PlayCommandHandler {
 						.queue();
 				break;
 			case SEEK:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: seek")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: seek")
 						.setDescription("`" + commandWithPrefix
 								+ " [tempo]` -> muda o tempo da música para o tempo referido"
 								+ "\n\n`[tempo]` pode ser em segundos `120`, ou em minutos `2:00`" + "\n\nEx.: `"
@@ -385,7 +386,7 @@ public class PlayCommandHandler {
 						.build()).queue();
 				break;
 			case SHUFFLE:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder()
 								.setTitle("Comando: shuffle").setDescription("`" + commandWithPrefix
 										+ "` -> embaralha a fila" + "\ni.e. liga o aleatório, não pode ser desfeito")
@@ -393,19 +394,19 @@ public class PlayCommandHandler {
 						.queue();
 				break;
 			case SKIP:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: skip")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: skip")
 						.setDescription("Alias: `next` `n` `s`\n" + "`" + commandWithPrefix
 								+ "` -> pula para a próxima música da fila"
 								+ "\n(ou para de tocar caso não haja nenhuma)")
 						.build()).queue();
 				break;
 			case STOP:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: stop")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: stop")
 						.setDescription("`" + commandWithPrefix + "` -> pausa o bot e para de tocar a música atual")
 						.build()).queue();
 				break;
 			case SUMMON:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: summon")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: summon")
 						.setDescription(
 								"Alias: `join`\n" + "`" + commandWithPrefix + "` -> chama o bot para a sua sala")
 						.build()).queue();
@@ -414,30 +415,30 @@ public class PlayCommandHandler {
 				break;
 
 			case UNKNOWN:
-				channel.sendMessageEmbeds(
+				messageChannel.sendMessageEmbeds(
 						new EmbedBuilder().setDescription("Acho q n tenho esse comando ai n man").build()).queue();
 				break;
 
 			case VOLUME:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: volume")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: volume")
 						.setDescription("Alias: `vol`\n" + "`" + commandWithPrefix + "` -> mostra o volume atual"
 						+ "\n`" + commandWithPrefix + " 100` -> muda o volume para 100")
 						.build()).queue();
 				break;
 			case LEAVE:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: clear")
 						.setDescription("Alias: `l` `destroy`\n" + "`"
 						+ commandWithPrefix + "` -> expulsa o bot da sala (ele chora no banho dps)")
 						.build()).queue();
 				break;
 			case LYRICS:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: lyrics")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: lyrics")
 						.setDescription("Alias: `ly`\n" + "`"
 						+ commandWithPrefix + "` -> mostra a letra da musica atual")
 						.build()).queue();
 				break;
 			case ABOUT:
-				channel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: about")
+				messageChannel.sendMessageEmbeds(new EmbedBuilder().setTitle("Comando: about")
 						.setDescription("`" + commandWithPrefix + "` -> mostra informações sobre o bot")
 						.build()).queue();
 				break;
