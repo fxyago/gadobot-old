@@ -5,7 +5,11 @@ build
 /spotify_cfg.txt
 *.log
 *.project
-bin/
-.settings/
+.project
+.classpath
+/bin/
+.settings/*
+/.settings/
 target/
 src/test/
+.gitattributes
