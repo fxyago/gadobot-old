@@ -33,7 +33,7 @@ public enum Commands {
 		SHUTDOWN
 	}
 	
-	private static final String THUMBSUP = "U+1F44D";
+	public static final String THUMBSUP = "U+1F44D";
 	private static final GLA GeniusLyrics = new GLA();
 	
 	public static Commands get(String command) {
@@ -232,7 +232,7 @@ public enum Commands {
 		}
 	}
 
-	private static String fixStringEncoding(String input) {
+	public static String fixStringEncoding(String input) {
 		final Charset fromCharset = Charset.forName("windows-1252");
 		final Charset toCharset = Charset.forName("UTF-8");
 		return new String(input.getBytes(fromCharset), toCharset);

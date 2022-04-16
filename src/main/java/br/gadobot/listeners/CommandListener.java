@@ -55,7 +55,8 @@ public class CommandListener extends ListenerAdapter {
 		return musicManager;
 	}
 
-	public void onGuildMessageReceived(MessageReceivedEvent event) {
+	@Override
+	public void onMessageReceived(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentRaw();
 		if (message.startsWith(InitApp.PREFIX))
 			Commands.execute(event, this, playerManager);
@@ -93,7 +94,8 @@ public class CommandListener extends ListenerAdapter {
 		}
 	}
 	
-	public void onButtonClick(ButtonInteractionEvent event) {
+	@Override
+	public void onButtonInteraction(ButtonInteractionEvent event) {
 		
 		String id = "";
 		Message message;

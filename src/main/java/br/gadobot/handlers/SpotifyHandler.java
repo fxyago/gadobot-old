@@ -53,8 +53,8 @@ public class SpotifyHandler {
 		}
 	};
 	
-	private static File cfgToken = new File("cfg.txt");
-	private static File cfgClient = new File("spotify_cfg.txt");
+	private static File cfgToken = new File(System.getProperty("user.dir") + InitApp.FILE_SEPARATOR + "cfg.txt");
+	private static File cfgClient = new File(System.getProperty("user.dir") + InitApp.FILE_SEPARATOR + "spotify_cfg.txt");
 	
 	public SpotifyHandler() {}
 	

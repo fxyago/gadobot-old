@@ -19,17 +19,19 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 public class InitApp {
 	
 	public static final long SELF_ID = 906888499075112971l;
-	public static final String PREFIX = "[";
+	public static final String PREFIX = ";";
 	public static final Logger LOGGER = LoggerFactory.getLogger(InitApp.class);
 	public static String discordToken;
 	public static JDA jda;
+	public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 	
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws LoginException, InterruptedException {
 		
 		LOGGER.info("Initializing...");
 		SpotifyHandler spotifyInitializer = new SpotifyHandler();
 		
-		try (BufferedReader br = new BufferedReader(new FileReader("discord_token.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + FILE_SEPARATOR + "discord_token.txt"))) {
 			
 			discordToken = br.readLine();
 			jda = JDABuilder.create(discordToken,

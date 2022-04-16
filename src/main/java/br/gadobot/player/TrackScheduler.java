@@ -17,6 +17,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
+import br.gadobot.commands.Commands;
 import br.gadobot.handlers.PlayCommandHandler;
 import br.gadobot.listeners.CommandListener;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -164,7 +165,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		if (endReason.mayStartNext) {
 			if (queue.isEmpty()) {
 				currentTrack = new GadoAudioTrack();
-				resetTimer("Cabou a música, to indo nessa rapazeada 😎", 5, TimeUnit.MINUTES);
+				resetTimer("Cabou a m�sica, to indo nessa rapazeada " + Commands.THUMBSUP, 5, TimeUnit.MINUTES);
 			} else
 				nextTrack();
 		}
@@ -203,7 +204,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	public void leaveChannelOnIdle() {
 		this.guild.getAudioManager().closeAudioConnection();
 		this.currentChannel.sendMessageEmbeds(new EmbedBuilder()
-				.setDescription("todo mundo foi embora, vazei 😟")
+				.setDescription("todo mundo foi embora, vazei " + Commands.THUMBSUP)
 				.build()).queue();
 	}
 	
