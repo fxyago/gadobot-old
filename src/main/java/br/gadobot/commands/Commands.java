@@ -10,7 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 
-import br.gadobot.Gado;
+import br.gadobot.InitApp;
 import br.gadobot.handlers.PlayCommandHandler;
 import br.gadobot.listeners.CommandListener;
 import br.gadobot.player.GadoAudioTrack;
@@ -90,7 +90,7 @@ public enum Commands {
 		
 		case ADMIN:
 			if (Admin.valueOf(arguments.toUpperCase()) == Admin.SHUTDOWN && event.getAuthor().getIdLong() == 156148460372885504l) {
-				Gado.jda.shutdown();
+				InitApp.jda.shutdown();
 			}
 			break;
 			

@@ -1,20 +1,23 @@
 package br.gadobot.handlers;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import br.gadobot.Gado;
+import org.apache.commons.lang3.tuple.Pair;
+
+import br.gadobot.InitApp;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.specification.Album;
@@ -24,7 +27,6 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
-import se.michaelthelin.spotify.requests.authorization.authorization_code.pkce.AuthorizationCodePKCERefreshRequest;
 import se.michaelthelin.spotify.requests.data.albums.GetAlbumRequest;
 import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistRequest;
 import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistsItemsRequest;
@@ -33,13 +35,15 @@ import se.michaelthelin.spotify.requests.data.tracks.GetTrackRequest;
 public class SpotifyHandler {
 		
 	
-	private static final SpotifyApi spotify = new SpotifyApi.Builder()
-			.setClientId("b4bce5a2399d4867a9178c4dc19f4157")
-			.setClientSecret("130eeaf2287d43bf9230114c4ab38459")
-			.build();
+//	private static final SpotifyApi spotify = new SpotifyApi.Builder()
+//			.setClientId("b4bce5a2399d4867a9178c4dc19f4157")
+//			.setClientSecret("130eeaf2287d43bf9230114c4ab38459")
+//			.build();
 	
-	private static String spotifyAccessToken;
-	private static String spotifyRefreshToken;
+	private static final SpotifyApi SPOTIFY_API;
+	
+	private static String spotifyAccessToken, spotifyRefreshToken;
+	private static final String CLIENT_ID, CLIENT_SECRET;
 	private static ExecutorService executor = Executors.newCachedThreadPool();
 	
 	private static Timer timer = new Timer();
@@ -49,41 +53,58 @@ public class SpotifyHandler {
 		}
 	};
 	
-	private static File cfg = new File(".\\cfg.txt");
+	private static File cfgToken = new File("cfg.txt");
+	private static File cfgClient = new File("spotify_cfg.txt");
 	
-	public SpotifyHandler() {
-		if (!cfg.exists())
+	public SpotifyHandler() {}
+	
+	static {
+		if (!cfgToken.exists())
 			try {
-				cfg.createNewFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				cfgToken.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}			
-		try {
-
-			Scanner scan = new Scanner(cfg);
-
-			spotifyAccessToken = scan.nextLine();
-			spotifyRefreshToken = scan.nextLine();
-			scan.close();
-
-			System.out.println(spotifyAccessToken);
-			System.out.println(spotifyRefreshToken);
+		Pair<String, String> clientConfigs = getSpotifyConfigs().getLeft();
+		Pair<String, String> tokenConfigs = getSpotifyConfigs().getRight();
+		
+		CLIENT_ID = clientConfigs.getLeft();
+		CLIENT_SECRET = clientConfigs.getRight();
+		
+		SPOTIFY_API = new SpotifyApi.Builder().setClientId(CLIENT_ID).setClientSecret(CLIENT_SECRET).build();
+		
+		spotifyAccessToken = tokenConfigs.getLeft();
+		spotifyRefreshToken = tokenConfigs.getRight();
+				
+		SPOTIFY_API.setAccessToken(spotifyAccessToken);
+		SPOTIFY_API.setRefreshToken(spotifyRefreshToken);
+		
+		String time = formatTime();
+		
+		InitApp.LOGGER.info("Time of start: " + time);
+		
+		timer.scheduleAtFixedRate(task, 0, 30 * 60 * 1000);
+	}
+	
+	private static Pair<Pair<String, String>, Pair<String, String>> getSpotifyConfigs() {
+		
+		String clientId = "", clientSecret = "", accessToken = "", refreshToken = "";
+		
+		try(BufferedReader brClient = new BufferedReader(new FileReader(cfgClient));
+			BufferedReader brToken = new BufferedReader(new FileReader(cfgToken))) {
+				
+			clientId = brClient.readLine();
+			clientSecret = brClient.readLine();
 			
-			spotify.setAccessToken(spotifyAccessToken);
-			spotify.setRefreshToken(spotifyRefreshToken);
-			
-			String time = formatTime();
-			
-			Gado.LOGGER.info("Time of start: " + time);
-			
-			timer.scheduleAtFixedRate(task, 0, 30 * 60 * 1000);
+			accessToken = brToken.readLine();
+			refreshToken = brToken.readLine();
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		return Pair.of(Pair.of(clientId, clientSecret), Pair.of(accessToken, refreshToken));
 	}
-
+	
 	private static String formatTime() {
 		String hour = String.valueOf(Calendar.getInstance().get(Calendar.HOUR_OF_DAY));
 		String minute = String.valueOf(Calendar.getInstance().get(Calendar.MINUTE));
@@ -92,14 +113,14 @@ public class SpotifyHandler {
 		return time;
 	}
 	
-	public Future<String> trackConverterAsync(String trackUrl) {
+	public static Future<String> trackConverterAsync(String trackUrl) {
 		
 		GetTrackRequest trackRequest;
 		
 		if (!trackUrl.startsWith("id:")) {
-			trackRequest = spotify.getTrack(trackUrl.contains("?") ? trackUrl.split("/")[4].split("\\?")[0] : trackUrl.split("/")[4]).build();
+			trackRequest = SPOTIFY_API.getTrack(trackUrl.contains("?") ? trackUrl.split("/")[4].split("\\?")[0] : trackUrl.split("/")[4]).build();
 		} else {
-			trackRequest = spotify.getTrack(trackUrl.substring(3, trackUrl.length())).build();
+			trackRequest = SPOTIFY_API.getTrack(trackUrl.substring(3, trackUrl.length())).build();
 		}
 				
 		return executor.submit(() -> {
@@ -115,10 +136,10 @@ public class SpotifyHandler {
 		});		
 	}
 	
-	public int getNumberOfTracksAlbum(String albumUrl) {
+	public static int getNumberOfTracksAlbum(String albumUrl) {
 		String parsedId = albumUrl.contains("?") ? albumUrl.split("/")[4].split("\\?")[0] : albumUrl.split("/")[4];
 		
-		GetAlbumRequest albumRequest = spotify.getAlbum(parsedId).build();
+		GetAlbumRequest albumRequest = SPOTIFY_API.getAlbum(parsedId).build();
 		
 		int nOfTracks = 0;
 		
@@ -131,11 +152,11 @@ public class SpotifyHandler {
 		return nOfTracks;
 	}
 	
-	public int getNumberOfTracks(String playlistUrl) {
+	public static int getNumberOfTracks(String playlistUrl) {
 		
 		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 		
-		GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId).build();
+		GetPlaylistRequest playlistRequest = SPOTIFY_API.getPlaylist(parsedId).build();
 		
 		int nOfTracks = 0;
 		
@@ -148,7 +169,7 @@ public class SpotifyHandler {
 		return nOfTracks;
 	}
 	
-	public Future<String> firstTrackConverterAsync(String playlistUrl) {
+	public static Future<String> firstTrackConverterAsync(String playlistUrl) {
 		
 		return executor.submit(() -> {
 		
@@ -156,12 +177,12 @@ public class SpotifyHandler {
 
 		String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 		
-		GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId).build();
+		GetPlaylistRequest playlistRequest = SPOTIFY_API.getPlaylist(parsedId).build();
 		
 		try {
 			
 			Playlist playlist = playlistRequest.execute();
-			Track trackRequest = spotify.getTrack(playlist.getTracks().getItems()[0].getTrack().getId()).build().execute();
+			Track trackRequest = SPOTIFY_API.getTrack(playlist.getTracks().getItems()[0].getTrack().getId()).build().execute();
 						
 			fullInfo = trackRequest.getArtists()[0].getName() + " - " + trackRequest.getName();
 			
@@ -172,7 +193,7 @@ public class SpotifyHandler {
 		});
 	}
 	
-	public Future<List<String>> playlistConverterAsync(String playlistUrl) {
+	public static Future<List<String>> playlistConverterAsync(String playlistUrl) {
 
 		int nOfTracks = getNumberOfTracks(playlistUrl);
 		List<String> tracks = new LinkedList<>();
@@ -183,7 +204,7 @@ public class SpotifyHandler {
 
 				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
 				for (int i = 0; i < nOfLoops.intValue(); i++) {
-					GetPlaylistsItemsRequest itemsRequest = spotify.getPlaylistsItems(parsedId.trim()).offset(i*100).build();
+					GetPlaylistsItemsRequest itemsRequest = SPOTIFY_API.getPlaylistsItems(parsedId.trim()).offset(i*100).build();
 					try {
 						Paging<PlaylistTrack> playlistTracks = itemsRequest.execute();
 						for (int j = 0; j < 100; j++) {
@@ -204,7 +225,7 @@ public class SpotifyHandler {
 		} else {
 			return executor.submit(() -> {
 				String parsedId = playlistUrl.contains("?") ? playlistUrl.split("/")[4].split("\\?")[0] : playlistUrl.split("/")[4];
-				GetPlaylistRequest playlistRequest = spotify.getPlaylist(parsedId.trim()).build();
+				GetPlaylistRequest playlistRequest = SPOTIFY_API.getPlaylist(parsedId.trim()).build();
 
 				try {
 					Playlist playlist = playlistRequest.execute();
@@ -221,8 +242,8 @@ public class SpotifyHandler {
 		}
 	}
 	
-	public Future<Track> trackConverterId(String id) {
-		GetTrackRequest trackRequest = spotify.getTrack(id).build();		
+	public static Future<Track> trackConverterId(String id) {
+		GetTrackRequest trackRequest = SPOTIFY_API.getTrack(id).build();		
 		return executor.submit(() -> {
 			try {
 				return trackRequest.execute();
@@ -233,11 +254,11 @@ public class SpotifyHandler {
 		});
 	}
 	
-	public Future<List<String>> albumConverterAsync(String albumUrl) {
+	public static Future<List<String>> albumConverterAsync(String albumUrl) {
 		
 		List<String> tracks = new LinkedList<>();
 
-		GetAlbumRequest items = spotify.getAlbum(albumUrl).build();
+		GetAlbumRequest items = SPOTIFY_API.getAlbum(albumUrl).build();
 
 		return executor.submit(() -> {
 
@@ -259,44 +280,21 @@ public class SpotifyHandler {
 	
 	public static void refreshSpotifyToken() {
 
-		try {
-//			AuthorizationCodePKCERefreshRequest authorizationCodePKCERefreshRequest = spotify.authorizationCodePKCERefresh().build();
-//			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodePKCERefreshRequest.execute();
-//			
-//			BufferedWriter br = new BufferedWriter(new FileWriter(cfg));
-//			br.write(authorizationCodeCredentials.getAccessToken());
-//			br.write("\n");
-//			br.write(authorizationCodeCredentials.getRefreshToken());
-//			br.close();
-//			
-//			spotify.setAccessToken(authorizationCodeCredentials.getAccessToken());
-//			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
-//			
-//			String time =  formatTime();
-//			
-//			Gado.LOGGER.info("Token successfully refreshed at: " + time);
-//			Gado.LOGGER.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
+		try (BufferedWriter br = new BufferedWriter(new FileWriter(cfgToken))) {
 			
-			AuthorizationCodeRefreshRequest authorizationCodeRefreshRequest = spotify.authorizationCodeRefresh().build();
+			AuthorizationCodeRefreshRequest authorizationCodeRefreshRequest = SPOTIFY_API.authorizationCodeRefresh().build();
 			final AuthorizationCodeCredentials authorizationCodeCredentials = authorizationCodeRefreshRequest.execute();
-			
-			BufferedWriter br = new BufferedWriter(new FileWriter(cfg));
-			
-			System.out.println(authorizationCodeCredentials.getAccessToken());
-			System.out.println(authorizationCodeCredentials.getRefreshToken());
 			
 			br.write(authorizationCodeCredentials.getAccessToken());
 			br.write(System.lineSeparator());
 			br.write(spotifyRefreshToken);
-			br.close();
 			
-			spotify.setAccessToken(authorizationCodeCredentials.getAccessToken());
-//			spotify.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
+			SPOTIFY_API.setAccessToken(authorizationCodeCredentials.getAccessToken());
 			
 			String time =  formatTime();
 			
-			Gado.LOGGER.info("Token successfully refreshed at: " + time);
-			Gado.LOGGER.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
+			InitApp.LOGGER.info("Token successfully refreshed at: " + time);
+			InitApp.LOGGER.info("Expires in: " + authorizationCodeCredentials.getExpiresIn() + " s");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

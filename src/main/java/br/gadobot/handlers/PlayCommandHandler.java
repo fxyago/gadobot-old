@@ -10,7 +10,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import br.gadobot.Gado;
+import br.gadobot.InitApp;
 import br.gadobot.commands.Commands;
 import br.gadobot.listeners.CommandListener;
 import br.gadobot.player.GadoAudioTrack;
@@ -19,7 +19,6 @@ import br.gadobot.player.TrackScheduler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
@@ -32,7 +31,7 @@ public class PlayCommandHandler {
 		
 	public static void play(final MessageReceivedEvent event, final String arguments, final CommandListener listener, final AudioPlayerManager playerManager) {
 		
-		boolean isSearch = event.getMessage().getContentRaw().startsWith(Gado.PREFIX + "search");
+		boolean isSearch = event.getMessage().getContentRaw().startsWith(InitApp.PREFIX + "search");
 
 		if (arguments.contains("spotify.com")) {
 			if (arguments.contains("playlist")) {
@@ -42,7 +41,7 @@ public class PlayCommandHandler {
 			} else {
 				String spotifyQuery = "";
 				try {
-					spotifyQuery = Gado.spotifyHandler.trackConverterAsync(arguments).get();
+					spotifyQuery = SpotifyHandler.trackConverterAsync(arguments).get();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -63,10 +62,10 @@ public class PlayCommandHandler {
 
 	private static void queueAlbum(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		
-		Future<List<String>> spotifyQueries = Gado.spotifyHandler.albumConverterAsync(arguments);
+		Future<List<String>> spotifyQueries = SpotifyHandler.albumConverterAsync(arguments);
 		
 		event.getChannel().sendMessageEmbeds(new EmbedBuilder()
-				.setAuthor("Adicionando à fila: ").setTitle(Gado.spotifyHandler.getNumberOfTracksAlbum(arguments) + " músicas")
+				.setAuthor("Adicionando à fila: ").setTitle(SpotifyHandler.getNumberOfTracksAlbum(arguments) + " músicas")
 				.build()).queue();
 		
 		try {
@@ -79,8 +78,8 @@ public class PlayCommandHandler {
 
 	private static void queuePlaylist(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		
-		Future<List<String>> spotifyQueries = Gado.spotifyHandler.playlistConverterAsync(arguments);
-		int playlistSize = Gado.spotifyHandler.getNumberOfTracks(arguments);
+		Future<List<String>> spotifyQueries = SpotifyHandler.playlistConverterAsync(arguments);
+		int playlistSize = SpotifyHandler.getNumberOfTracks(arguments);
 		
 		event.getChannel().sendMessageEmbeds(new EmbedBuilder()
 				.setAuthor("Adicionando à fila: ").setTitle(playlistSize + " músicas")
@@ -104,7 +103,7 @@ public class PlayCommandHandler {
 
 	private static void queueFirstTrack(final MessageReceivedEvent event, final String arguments, final CommandListener listener) {
 		try {
-			queueSilently(listener.getGuildAudioPlayer(event.getGuild()), event.getMember(), Gado.spotifyHandler.firstTrackConverterAsync(arguments).get());
+			queueSilently(listener.getGuildAudioPlayer(event.getGuild()), event.getMember(), SpotifyHandler.firstTrackConverterAsync(arguments).get());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -278,7 +277,7 @@ public class PlayCommandHandler {
 					.build()).queue();
 		} else {
 
-			String commandWithPrefix = Gado.PREFIX + Commands.get(command.toUpperCase()).toString().toLowerCase();
+			String commandWithPrefix = InitApp.PREFIX + Commands.get(command.toUpperCase()).toString().toLowerCase();
 
 			switch (Commands.get(command.toUpperCase())) {
 			case ADMIN:

@@ -11,7 +11,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 
-import br.gadobot.Gado;
+import br.gadobot.InitApp;
 import br.gadobot.commands.Commands;
 import br.gadobot.player.GuildMusicManager;
 import br.gadobot.player.TrackScheduler;
@@ -57,7 +57,7 @@ public class CommandListener extends ListenerAdapter {
 
 	public void onGuildMessageReceived(MessageReceivedEvent event) {
 		String message = event.getMessage().getContentRaw();
-		if (message.startsWith(Gado.PREFIX))
+		if (message.startsWith(InitApp.PREFIX))
 			Commands.execute(event, this, playerManager);
 	}
 	
@@ -79,7 +79,7 @@ public class CommandListener extends ListenerAdapter {
 		TrackScheduler scheduler = getGuildAudioPlayer(event.getGuild()).scheduler;
 		
 		if (scheduler.isConnected()) {
-			if (event.getMember().getIdLong() == Gado.SELF_ID) {
+			if (event.getMember().getIdLong() == InitApp.SELF_ID) {
 				if (idleTimer != null) {
 					idleTimer.cancel(true);
 				}

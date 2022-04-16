@@ -13,18 +13,17 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
-public class Gado {
+public class InitApp {
 	
 	public static final long SELF_ID = 906888499075112971l;
 	public static final String PREFIX = "[";
-	public static final Logger LOGGER = LoggerFactory.getLogger(Gado.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(InitApp.class);
 	public static JDA jda;
-	public static SpotifyHandler spotifyHandler;
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
 		
 		LOGGER.info("Initializing...");
-		spotifyHandler = new SpotifyHandler();
+		SpotifyHandler spotifyInitializer = new SpotifyHandler();
 		
 		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.claq2OZkGDur3UMhjz19ma-UIck",
 				GatewayIntent.GUILD_MESSAGES,
