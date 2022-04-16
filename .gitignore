@@ -13,3 +13,4 @@ build
 target/
 src/test/
 .gitattributes
+/discord_token.txt

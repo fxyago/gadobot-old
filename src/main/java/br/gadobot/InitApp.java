@@ -1,5 +1,8 @@
 package br.gadobot;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 import javax.security.auth.login.LoginException;
 
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ public class InitApp {
 	public static final long SELF_ID = 906888499075112971l;
 	public static final String PREFIX = "[";
 	public static final Logger LOGGER = LoggerFactory.getLogger(InitApp.class);
+	public static String discordToken;
 	public static JDA jda;
 	
 	public static void main(String[] args) throws LoginException, InterruptedException {
@@ -25,13 +29,20 @@ public class InitApp {
 		LOGGER.info("Initializing...");
 		SpotifyHandler spotifyInitializer = new SpotifyHandler();
 		
-		jda = JDABuilder.create("OTA2ODg4NDk5MDc1MTEyOTcx.YYfLuw.claq2OZkGDur3UMhjz19ma-UIck",
-				GatewayIntent.GUILD_MESSAGES,
-				GatewayIntent.GUILD_VOICE_STATES)
-				.addEventListeners(new CommandListener())
-				.disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
-				.setActivity(Activity.listening(PREFIX + "help"))
-				.build();
+		try (BufferedReader br = new BufferedReader(new FileReader("discord_token.txt"))) {
+			
+			discordToken = br.readLine();
+			jda = JDABuilder.create(discordToken,
+					GatewayIntent.GUILD_MESSAGES,
+					GatewayIntent.GUILD_VOICE_STATES)
+					.addEventListeners(new CommandListener())
+					.disableCache(CacheFlag.ACTIVITY, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS, CacheFlag.ONLINE_STATUS)
+					.setActivity(Activity.listening(PREFIX + "help"))
+					.build();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
