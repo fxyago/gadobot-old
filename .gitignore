@@ -14,3 +14,4 @@ target/
 src/test/
 .gitattributes
 /discord_token.txt
+/gadocfg/

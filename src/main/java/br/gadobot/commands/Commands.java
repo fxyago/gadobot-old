@@ -89,9 +89,9 @@ public enum Commands {
 		switch (command) {
 		
 		case ADMIN:
-			if (Admin.valueOf(arguments.toUpperCase()) == Admin.SHUTDOWN && event.getAuthor().getIdLong() == 156148460372885504l) {
+			if (Admin.valueOf(arguments.toUpperCase()) == Admin.SHUTDOWN 
+			&& event.getAuthor().getIdLong() == 156148460372885504l)
 				InitApp.jda.shutdown();
-			}
 			break;
 			
 		case PLAY:
